@@ -1,16 +1,54 @@
-use std::path::Path;
-use std::error::Error;
+use std::{
+    error::Error,
+    fs::{File, OpenOptions},
+    io::Write,
+    path::Path,
+    sync::Mutex
+};
+use serde::{Serialize, Deserialize};
 
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FileRecord {
-    file_path: Path,
-    file_hash: Vec<u8>
+    path: &'static str,
+    hash: Vec<u8>
 }
 
 impl FileRecord {
-    pub fn new(file_path: Path) -> Result<FileRecord, Box<dyn Error>> {
-        let hash_string = sha256::try_digest(file_path)?;
-        let hash_bytes = hash_string.as_slice().to_hex();
+    pub fn new(path: &'static str) -> Result<FileRecord, Box<dyn Error + '_>> {
+        let hash_string = sha256::try_digest(Path::new(path))?;
+        let hash = hash_string.as_bytes().to_vec();
 
-        Ok(hash_bytes)
+        Ok(FileRecord {path, hash})
+    }
+}
+
+pub struct FlatFileDB {
+    file_path: &'static str,
+    file_mutex: Mutex<File>,
+    records: Vec<FileRecord>
+}
+
+impl FlatFileDB {
+    pub fn new(file_path: &'static str) -> Result<FlatFileDB, Box<dyn Error + '_>> {
+        let file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(file_path)?;
+        
+        Ok(FlatFileDB {file_path, file_mutex: Mutex::new(file), records: Vec::new()})
+    }
+
+    pub fn close(&mut self) -> Result<(), Box<dyn Error>> {
+        // TODO
+        Ok(())
+    }
+
+    pub fn store(&mut self, record: FileRecord) -> Result<(), Box<dyn Error + '_>> {
+        let record_encoded: Vec<u8> = bincode::serialize(&record)?;
+        let mut file = self.file_mutex.lock()?;
+        writeln!(*file, "{}", hex::encode(record_encoded))?;
+
+        Ok(())
     }
 }

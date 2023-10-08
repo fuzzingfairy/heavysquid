@@ -1,3 +1,4 @@
+mod record;
 
 use std::fs;
 use std::collections::HashMap;
