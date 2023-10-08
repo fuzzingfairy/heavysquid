@@ -22,5 +22,30 @@ fn main() {
         }
     }
 
-    println!("{:?}",hashes);
+
+
+    let paths = fs::read_dir("testbin/").unwrap();
+
+    for dirEntry in paths {
+        let path = dirEntry.unwrap().path();
+        
+        let fileStr :String= path.file_name().unwrap().to_str().unwrap().to_string();
+
+        match std::fs::read(path.clone()) {
+            Ok(bytes) => {
+                let hash = sha256::digest(&bytes);
+                match hashes.get(&fileStr) {
+                    Some(goodHash) => {
+                        if goodHash != &hash {
+                            println!("{} missed match hash!",fileStr);
+                        }
+                    },
+                    None => println!("{} not found in known good!",fileStr)
+                }
+            },
+            Err(error) => ()
+        }
+    }
+
+
 }
