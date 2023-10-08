@@ -1,17 +1,26 @@
 
 use std::fs;
+use std::collections::HashMap;
 
 fn main() {
-    
+
+    let mut hashes = HashMap::new();
 
     let paths = fs::read_dir("/bin/").unwrap();
 
     for dirEntry in paths {
         let path = dirEntry.unwrap().path();
         
-        let bytes = std::fs::read(path.clone()).unwrap();
-        let hash = sha256::digest_bytes(&bytes);
+        let fileStr :String= path.file_name().unwrap().to_str().unwrap().to_string();
 
-        println!("{},{}",path.display(),hash);
+        match std::fs::read(path.clone()) {
+            Ok(bytes) => {
+                let hash = sha256::digest(&bytes);
+                hashes.insert(fileStr,hash.clone());
+            },
+            Err(error) => ()
+        }
     }
+
+    println!("{:?}",hashes);
 }
