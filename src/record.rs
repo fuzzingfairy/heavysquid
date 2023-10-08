@@ -1,17 +1,16 @@
+use serde::{Deserialize, Serialize};
 use std::{
     error::Error,
     fs::{File, OpenOptions},
     io::Write,
     path::Path,
-    sync::Mutex
+    sync::Mutex,
 };
-use serde::{Serialize, Deserialize};
-
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileRecord {
     path: &'static str,
-    hash: Vec<u8>
+    hash: Vec<u8>,
 }
 
 impl FileRecord {
@@ -19,14 +18,14 @@ impl FileRecord {
         let hash_string = sha256::try_digest(Path::new(path))?;
         let hash = hash_string.as_bytes().to_vec();
 
-        Ok(FileRecord {path, hash})
+        Ok(FileRecord { path, hash })
     }
 }
 
 pub struct FlatFileDB {
     file_path: &'static str,
     file_mutex: Mutex<File>,
-    records: Vec<FileRecord>
+    records: Vec<FileRecord>,
 }
 
 impl FlatFileDB {
@@ -35,8 +34,12 @@ impl FlatFileDB {
             .write(true)
             .append(true)
             .open(file_path)?;
-        
-        Ok(FlatFileDB {file_path, file_mutex: Mutex::new(file), records: Vec::new()})
+
+        Ok(FlatFileDB {
+            file_path,
+            file_mutex: Mutex::new(file),
+            records: Vec::new(),
+        })
     }
 
     pub fn close(&mut self) -> Result<(), Box<dyn Error>> {
