@@ -7,6 +7,12 @@ const CONFIG_PATH: &'static str = "etc/heavysquid.toml";
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
 pub struct TomlConfig {
+    filesystem: FilesystemConfig
+}
+
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)]
+pub struct FilesystemConfig {
     dir_baseline: String,
     dir_target: String,
 }
@@ -20,10 +26,10 @@ impl TomlConfig {
     }
 
     pub fn get_dir_target(&self) -> &str {
-        &self.dir_target
+        &self.filesystem.dir_target
     }
 
     pub fn get_dir_baseline(&self) -> &str {
-        &self.dir_baseline
+        &self.filesystem.dir_baseline
     }
 }
