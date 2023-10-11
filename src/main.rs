@@ -1,12 +1,15 @@
+mod config;
 mod record;
 
+use config::TomlConfig;
 use std::collections::HashMap;
 use std::fs;
 
 fn main() {
+    let config: TomlConfig = TomlConfig::load().expect("Failed to load config");
     let mut hashes = HashMap::new();
 
-    let paths = fs::read_dir("/bin/").unwrap();
+    let paths = fs::read_dir(config.get_dir_baseline()).unwrap();
 
     for dir in paths {
         let path = dir.unwrap().path();
@@ -22,7 +25,7 @@ fn main() {
         }
     }
 
-    let paths = fs::read_dir("testbin/").unwrap();
+    let paths = fs::read_dir(config.get_dir_target()).unwrap();
 
     for dir in paths {
         let path = dir.unwrap().path();
